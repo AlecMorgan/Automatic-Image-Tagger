@@ -32,7 +32,6 @@ def get_posts(hashtag, n, browser):
         browser.execute_script(scroll_down)
         time.sleep(3 + (random() * 5))
     
-    print(len(images), len(post_links))
     return [{'post_link': post_links[i], 'image': images[i], 'search_hashtag': hashtag} for i in range(len(post_links))]
  
 
