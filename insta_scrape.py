@@ -49,32 +49,7 @@ def find_hashtags(comment):
     """Find hastags used in comment and return them"""
     hashtags = re.findall('#[A-Za-z]+', comment)
     return hashtags
-
-
-def get_n_posts(hashtag, n):
-    """With the input of a hashtag name, scrape the n most recent posts urls"""
-    url = "https://www.instagram.com/explore/tags/" + hashtag + "/"
-    browser = Chrome()
-    browser.get(url)
-    post = 'https://www.instagram.com/p/'
-    post_links = []
-    img_src_links = []
-    while len(post_links) < n:
-        links = [a.get_attribute('href') for a in browser.find_elements_by_tag_name('a')]
-        images = [img.get_attribute('src') for img in browser.find_elements_by_css_selector('article img')]
-        for i, link in enumerate(links):
-            if post in link and link not in post_links:
-                post_links.append(link)
-            
-            img_src_links.append(images[i])
-            
-        
-        scroll_down = "window.scrollTo(0, document.body.scrollHeight);"
-        browser.execute_script(scroll_down)
-        time.sleep(10)
-    else:
-        return post_links[:n], img_src_links[:n]
-    
+ 
 
 def get_hashtags(url):
     browser = Chrome()
@@ -88,13 +63,4 @@ def get_hashtags(url):
             all_hashtags.extend(hashtags)
     return list(set(all_hashtags))
         
-    
-def get_images_urls(url):
-    browser = Chrome()
-    browser.get(url)    
-    images = browser.find_elements_by_CSS_selector('article img')
-    img_links = []
-    for image in images:
-        img_links.append(image.get_attribute('src'))
-    return img_links
  
