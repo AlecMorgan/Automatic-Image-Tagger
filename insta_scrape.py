@@ -1,4 +1,4 @@
-# code taken from jnawjux with permission from owner:
+# base code taken from jnawjux with permission from owner:
 # https://github.com/jnawjux/web_scraping_corgis/blob/master/insta_scrape.py
 
 import time
@@ -34,35 +34,10 @@ def get_posts(hashtag, n, browser):
     
     print(len(images), len(post_links))
     return [{'post_link': post_links[i], 'image': images[i], 'search_hashtag': hashtag} for i in range(len(post_links))]
-    
-def insta_details(urls):
-    """Take a post url and return post details"""
-    browser = Chrome()
-    post_details = []
-    for link in urls:
-        browser.get(link)
-        try:
-        # This captures the standard like count. 
-            likes = browser.find_element_by_partial_link_text(' likes').text
-        except:
-        # This captures the like count for videos which is stored
-            view_id = '//*[@id="react-root"]/section/main/div/div/article/div[2]/section[2]/div/span'
-            likes = browser.find_element_by_xpath(view_id).text
-        age = browser.find_element_by_css_selector('a time').text
-        xpath_c = '//*[@id="react-root"]/section/main/div/div/article/div[2]/div[1]/ul/li[1]/div/div/div'
-        comment = browser.find_element_by_xpath(xpath_c).text
-        post_details.append({'link': link, 'likes/views': likes, 'age': age, 'comment': comment})
-        time.sleep(3 + (random() * 5))
-    return post_details  
-
-def find_hashtags(comment):
-    """Find hastags used in comment and return them"""
-    hashtags = re.findall('#[A-Za-z]+', comment)
-    return hashtags
  
 
 def get_hashtags(url, browser):
-
+    '''Return a list of hashtags found in all post's comments'''
     browser.get(url)
     comments_html = browser.find_elements_by_css_selector('span')
     all_hashtags = []
@@ -74,7 +49,7 @@ def get_hashtags(url, browser):
     return list(set(all_hashtags))
 
 def get_image(url):
-    #browser.get(url)
+    '''Download image from given url and return it's name'''
     uuid = uuid4()
     urlretrieve(url, f'data/{uuid}.jpg')
     name = f'{uuid}.jpg'
@@ -82,6 +57,7 @@ def get_image(url):
         
     
 def get_full_info(hashtag, n):
+    '''Return a dictionary with full n posts info for a given hashtag'''
     browser = Chrome()
     
     posts = get_posts(hashtag, n, browser)
