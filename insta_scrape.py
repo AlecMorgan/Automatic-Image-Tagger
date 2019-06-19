@@ -1,9 +1,9 @@
-# base code taken from jnawjux with permission from owner:
+# Base code taken from jnawjux with permission from owner:
 # https://github.com/jnawjux/web_scraping_corgis/blob/master/insta_scrape.py
 
 import time
 import re
-from selenium.webdriver import Chrome, Firefox
+from selenium.webdriver import Chrome
 from random import random
 from urllib.request import urlretrieve
 from uuid import uuid4
@@ -36,7 +36,7 @@ def get_posts(hashtag, n, browser):
  
 
 def get_hashtags(url, browser):
-    '''Return a list of hashtags found in all post's comments'''
+    """Return a list of hashtags found in all post's comments"""
     browser.get(url)
     comments_html = browser.find_elements_by_css_selector('span')
     all_hashtags = []
@@ -48,7 +48,7 @@ def get_hashtags(url, browser):
     return list(set(all_hashtags))
 
 def get_image(url):
-    '''Download image from given url and return it's name'''
+    """Download image from given url and return it's name"""
     uuid = uuid4()
     urlretrieve(url, f'data/{uuid}.jpg')
     name = f'{uuid}.jpg'
@@ -56,7 +56,7 @@ def get_image(url):
         
     
 def get_full_info(hashtag, n):
-    '''Return a dictionary with full n posts info for a given hashtag'''
+    """Return a dictionary with full n posts info for a given hashtag"""
     browser = Chrome()
     
     posts = get_posts(hashtag, n, browser)
