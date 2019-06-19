@@ -47,10 +47,10 @@ def get_hashtags(url, browser):
             all_hashtags.extend(hashtags)
     return list(set(all_hashtags))
 
-def get_image(url):
+def get_image(url, hashtag):
     """Download image from given url and return it's name"""
     uuid = uuid4()
-    urlretrieve(url, f'data/{uuid}.jpg')
+    urlretrieve(url, f'data/{hashtag}/{uuid}.jpg')
     name = f'{uuid}.jpg'
     return name
         
@@ -64,7 +64,7 @@ def get_full_info(hashtag, n):
     for post in posts:
         post['hashtags'] = get_hashtags(post['post_link'], browser)
         time.sleep(3 + (random() * 5))
-        post['image_local_name'] = get_image(post['image'])
+        post['image_local_name'] = get_image(post['image'], hashtag)
         time.sleep(3 + (random() * 5))
     return posts
  
