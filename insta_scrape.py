@@ -60,11 +60,14 @@ def get_full_info(hashtag, n):
     browser = Chrome()
     
     posts = get_posts(hashtag, n, browser)
-     
-    for post in posts:
-        post['hashtags'] = get_hashtags(post['post_link'], browser)
-        time.sleep(3 + (random() * 5))
-        post['image_local_name'] = get_image(post['image'], hashtag)
-        time.sleep(3 + (random() * 5))
-    return posts
+    
+    try:
+        for post in posts:
+            post['hashtags'] = get_hashtags(post['post_link'], browser)
+            time.sleep(3 + (random() * 5))
+            post['image_local_name'] = get_image(post['image'], hashtag)
+            time.sleep(3 + (random() * 5))
+        return posts
+    except:
+        return posts
  
