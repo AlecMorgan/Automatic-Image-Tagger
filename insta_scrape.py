@@ -7,6 +7,7 @@ from selenium.webdriver import Chrome
 from random import random
 from urllib.request import urlretrieve
 from uuid import uuid4
+import boto3
 
 def get_posts(hashtag, n, browser):
     """With the input of an account page, scrape the n most recent posts urls"""
@@ -81,8 +82,6 @@ def upload_files_to_s3(dir_path, hashtag, bucket_name): ##ex dir_path: 'data/car
     for (dirpath, dirnames, filenames) in walk(dir_path):
         f.extend(filenames)
         break
-        
-    print(f)
     
     for name in f:
         source = dir_path + name
