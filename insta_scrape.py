@@ -93,7 +93,7 @@ def upload_files_to_s3(dir_path, hashtag, bucket_name): ##ex dir_path: 'data/car
         
 
 
-def fetch_image_from_s3(bucket, key):
+def fetch_image_from_s3_to_array(bucket, key):
     """Fetches an image from S3 and returns a numpy array."""
     s3 = boto3.client('s3')
     response = s3.get_object(Bucket=bucket, Key=key)
@@ -103,4 +103,14 @@ def fetch_image_from_s3(bucket, key):
     image = Image.open(f)   
     image_data = np.asarray(image)
     return image_data
+
+def fetch_image_from_s3(bucket, key):
+    """Fetches an image from S3"""
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=bucket, Key=key)
+    body = response['Body']
+    data = body.read()    
+    f = BytesIO(data)
+    image = Image.open(f)   
+    return image
  
