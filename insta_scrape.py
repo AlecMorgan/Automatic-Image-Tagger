@@ -70,4 +70,22 @@ def get_full_info(hashtag, n):
         return posts
     except:
         return posts
+    
+def upload_files_to_s3(dir_path, hashtag, bucket_name): ##ex dir_path: 'data/cars/' ; hashtag: 'travel'
+    '''Upload files from specific folder to S3 'instagram-images-mod4' bucket to a folder with hashtag name'''
+    s3 = boto3.resource('s3')
+    
+    # make a list of images filenames stored in local directory
+    f = []
+    for (dirpath, dirnames, filenames) in walk(dir_path):
+        f.extend(filenames)
+        break
+        
+    print(f)
+    
+    for name in f:
+        source = dir_path + name
+        bucket = bucket_name
+        destination = hashtag + '/' + name
+        s3.meta.client.upload_file(source, bucket, destination)
  
