@@ -8,6 +8,9 @@ from random import random
 from urllib.request import urlretrieve
 from uuid import uuid4
 import boto3
+from io import BytesIO
+import numpy as np
+from PIL import Image
 
 def get_posts(hashtag, n, browser):
     """With the input of an account page, scrape the n most recent posts urls"""
@@ -87,4 +90,27 @@ def upload_files_to_s3(dir_path, hashtag, bucket_name): ##ex dir_path: 'data/car
         bucket = bucket_name
         destination = hashtag + '/' + name
         s3.meta.client.upload_file(source, bucket, destination)
+        
+
+
+def fetch_image_from_s3_to_array(bucket, key):
+    """Fetches an image from S3 and returns a numpy array."""
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=bucket, Key=key)
+    body = response['Body']
+    data = body.read()    
+    f = BytesIO(data)
+    image = Image.open(f)   
+    image_data = np.asarray(image)
+    return image_data
+
+def fetch_image_from_s3(bucket, key):
+    """Fetches an image from S3"""
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=bucket, Key=key)
+    body = response['Body']
+    data = body.read()    
+    f = BytesIO(data)
+    image = Image.open(f)   
+    return image
  
