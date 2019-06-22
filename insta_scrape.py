@@ -125,3 +125,26 @@ def fetch_image_from_s3(bucket, key):
     f = BytesIO(data)
     image = Image.open(f)
     return image
+
+def prepare_image(img_path, height=img_size, width=img_size):
+    """Downsample and scale image to prepare it for neural network"""
+    img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
+    #If the image is stored locally:
+    #img = tf.io.read_file(img_path)
+    #img = tf.image.decode_image(img)
+    img = tf.cast(img, tf.float32)
+    img = (img/127.5) - 1
+    img = tf.image.resize(img, (height, width))
+    # Reshape B&W images to match dimensions of color images
+    if img.shape != (160, 160, 3):
+        img = tf.concat([img, img, img], axis=2)
+    return img
+
+def extract_features_for_one_image(image):
+    """Return a vector of 1280 deep features for image."""
+    image_np = image.numpy()
+    images_np = np.expand_dims(image_np, axis=0)
+    image_np.shape, images_np.shape
+    deep_features = neural_network.predict(images_np)[0]
+    return deep_features
+ 
