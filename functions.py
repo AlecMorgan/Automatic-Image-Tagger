@@ -5,7 +5,7 @@ import numpy as np
 import time
 import re
 from random import random
-from selenium.webdriver import Chrome
+from selenium.webdriver import Chrome, Firefox
 from urllib.request import urlretrieve
 from uuid import uuid4
 import boto3
@@ -72,7 +72,7 @@ def get_image(url, hashtag):
 
 def get_full_info(hashtag, n):
     """Return a dictionary with full n posts info for a given hashtag"""
-    browser = Chrome()
+    browser = Firefox()
 
     posts = get_posts(hashtag, n, browser)
 
