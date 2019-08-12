@@ -14,7 +14,9 @@ Our recommendation algorithm is based on ALS model combined with graphic data ex
 
 **Scraping notebook**: scraping.ipynb
 
-**Ready-to-use model**: predict_hashtag_for_new_image.ipynb
+**Ready-to-use model**: predict\*hashtag\*for\*new_image.ipynb
+Note that pickle files used in this notebook are not uploaded to GitHub due to the size. Please, request them if necessary.
+The model will be deployed as a Flask app shortly.
 
 ## Overvew
 
