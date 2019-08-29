@@ -5,13 +5,30 @@ import numpy as np
 import time
 import re
 from random import random
-from selenium.webdriver import Chrome
+from selenium.webdriver import Chrome, Firefox
 from urllib.request import urlretrieve
 from uuid import uuid4
 import boto3
 from io import BytesIO
 from PIL import Image
 import tensorflow as tf
+from tensorflow.keras.applications import MobileNetV2
+
+
+def train_nn():
+    """Train neural network from the pre-trained model MobileNet V2"""
+    base_model = MobileNetV2(input_shape=(160, 160, 3), include_top=False, weights='imagenet')
+
+    global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
+
+    neural_network = tf.keras.Sequential([
+          base_model,
+          global_average_layer,
+    ])
+    return neural_network
+
+# create neural network to use in other functions
+neural_network = train_nn()
 
 
 def get_posts(hashtag, n, browser):
@@ -72,7 +89,7 @@ def get_image(url, hashtag):
 
 def get_full_info(hashtag, n):
     """Return a dictionary with full n posts info for a given hashtag"""
-    browser = Chrome()
+    browser = Firefox()
 
     posts = get_posts(hashtag, n, browser)
 
@@ -142,6 +159,19 @@ def prepare_image(img_path, height=160, width=160, where='s3'):
     if img.shape != (160, 160, 3):
         img = tf.concat([img, img, img], axis=2)
     return img
+
+
+
+def extract_features(image_dict):
+    """Return a vector of 1280 deep features for image."""
+    image = image_dict['pic']
+    image_np = image.numpy()
+    images_np = np.expand_dims(image_np, axis=0)
+    image_np.shape, images_np.shape
+    deep_features = neural_network.predict(images_np)
+    image_dict['deep_features'] = deep_features[0]
+    return image_dict
+
 
 def extract_features_for_one_image(image, neural_network_model):
     """Return a vector of 1280 deep features for image."""
