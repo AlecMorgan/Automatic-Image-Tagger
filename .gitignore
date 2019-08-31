@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.pkl
+# This project currently (08/30/19) uses .pkl files to
+# re-use some important dataframes in different notebooks.
+# *.pkl
 
 # C extensions
 *.so
@@ -104,8 +106,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# data folder
+# data folder 
+# The data folder would contain the image dataset, but
+# due to the file size it is ommitted. If you want to 
+# If you want to recreate the image dataset, please 
+# use the web scraping utility: scraping.ipynb
 data/
-
-# pickle files folder
-pkl_files/
