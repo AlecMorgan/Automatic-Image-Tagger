@@ -177,7 +177,7 @@ def extract_features_for_one_image(image, neural_network_model):
     """Return a vector of 1280 deep features for image."""
     image_np = image.numpy()
     images_np = np.expand_dims(image_np, axis=0)
-    image_np.shape, images_np.shape
+    # image_np.shape, images_np.shape
     deep_features = neural_network_model.predict(images_np)[0]
     return deep_features
  
