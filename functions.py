@@ -149,7 +149,7 @@ def prepare_image(img_path, height=160, width=160, where='s3'):
     if where=='s3':
         img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
     elif where == 'local':
-    #If the image is stored locally:
+    # If the image is stored locally:
         img = tf.io.read_file(img_path)
         img = tf.image.decode_image(img)
     img = tf.cast(img, tf.float32)
@@ -167,7 +167,7 @@ def extract_features(image_dict):
     image = image_dict['pic']
     image_np = image.numpy()
     images_np = np.expand_dims(image_np, axis=0)
-    image_np.shape, images_np.shape
+    # image_np.shape, images_np.shape
     deep_features = neural_network.predict(images_np)
     image_dict['deep_features'] = deep_features[0]
     return image_dict
