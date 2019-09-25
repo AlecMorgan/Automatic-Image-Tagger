@@ -106,9 +106,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# data folder 
-# The data folder would contain the image dataset, but
-# due to the file size it is ommitted. If you want to 
-# If you want to recreate the image dataset, please 
-# use the web scraping utility: scraping.ipynb
+# The data folder is for holding the image dataset of
+# this project. Due to GitHub's file size constraints,
+# it is ommitted from the repository. If you want to
+# recreate this work, please use the web scraping
+# utility: scraping.ipynb
 data/
