@@ -112,3 +112,10 @@ venv.bak/
 # recreate this work, please use the web scraping
 # utility: scraping.ipynb
 data/
+
+# The metadata folder is for holding metadata about the
+# image dataset. While it easily fits GitHub's file size
+# constraints, it would be useless unless you had the
+# exact same images. The scraping.ipynb utility will 
+# automatically produce and fill this as well. 
+metadata/
