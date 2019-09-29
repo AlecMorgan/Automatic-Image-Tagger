@@ -1,9 +1,10 @@
-# Base scraping code taken from jnawjux with permission from owner:
+# Base scraping code taken from owner jnawjux with permission:
 # https://github.com/jnawjux/web_scraping_corgis/blob/master/insta_scrape.py
 
 import numpy as np
 import time
 import re
+import os
 from random import random
 from selenium.webdriver import Chrome, Firefox
 from urllib.request import urlretrieve
@@ -92,6 +93,11 @@ def get_full_info(hashtag, n):
     browser = Firefox()
 
     posts = get_posts(hashtag, n, browser)
+    
+    try:
+        os.mkdir(f"data/{hashtag}")
+    except OSError:
+        pass # We probably tried to make something that already exists
 
     try:
         for post in posts:
