@@ -88,8 +88,10 @@ def get_image(url, hashtag):
     return name
 
 
-def get_full_info(hashtag, n):
-    """Return a dictionary with full n posts info for a given hashtag"""
+def scrape_data(hashtag, n, delay=5):
+    """
+    Download n images and return a dictionary with their metadata.
+    """
     browser = Firefox()
 
     posts = get_posts(hashtag, n, browser)
@@ -102,9 +104,9 @@ def get_full_info(hashtag, n):
     try:
         for post in posts:
             post["hashtags"] = get_hashtags(post["post_link"], browser)
-            time.sleep(3 + (random() * 5))
+            time.sleep(random() * delay)
             post["image_local_name"] = get_image(post["image"], hashtag)
-            time.sleep(3 + (random() * 5))
+            time.sleep(random() * delay)
         return posts
     except:
         return posts
