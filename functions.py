@@ -13,23 +13,6 @@ import boto3
 from io import BytesIO
 from PIL import Image
 import tensorflow as tf
-from tensorflow.keras.applications import MobileNetV2
-
-
-def train_nn():
-    """Train neural network from the pre-trained model MobileNet V2"""
-    base_model = MobileNetV2(input_shape=(160, 160, 3), include_top=False, weights='imagenet')
-
-    global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
-
-    neural_network = tf.keras.Sequential([
-          base_model,
-          global_average_layer,
-    ])
-    return neural_network
-
-# create neural network to use in other functions
-neural_network = train_nn()
 
 
 def get_posts(hashtag, n, browser):
@@ -152,6 +135,7 @@ def fetch_image_from_s3(bucket, key):
     image = Image.open(f)
     return image
 
+
 def prepare_image(img_path, height=160, width=160, where='s3'):
     """Downsample and scale image to prepare it for neural network"""
     if where=='s3':
@@ -169,23 +153,10 @@ def prepare_image(img_path, height=160, width=160, where='s3'):
     return img
 
 
-
-def extract_features(image_dict):
-    """Return a vector of 1280 deep features for image."""
-    image = image_dict['pic']
-    image_np = image.numpy()
-    images_np = np.expand_dims(image_np, axis=0)
-    # image_np.shape, images_np.shape
-    deep_features = neural_network.predict(images_np)
-    image_dict['deep_features'] = deep_features[0]
-    return image_dict
-
-
-def extract_features_for_one_image(image, neural_network_model):
+def extract_features(image, neural_network):
     """Return a vector of 1280 deep features for image."""
     image_np = image.numpy()
     images_np = np.expand_dims(image_np, axis=0)
-    # image_np.shape, images_np.shape
-    deep_features = neural_network_model.predict(images_np)[0]
+    deep_features = neural_network.predict(images_np)[0]
     return deep_features
  
