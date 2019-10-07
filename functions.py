@@ -1,4 +1,5 @@
-# Base scraping code taken from owner jnawjux with permission:
+# Base of scraping code taken from owner John Naujoks with permission. 
+# See John's scraping code (which this project expanded upon) here: 
 # https://github.com/jnawjux/web_scraping_corgis/blob/master/insta_scrape.py
 
 import numpy as np
@@ -42,7 +43,7 @@ def get_posts(hashtag, n, browser):
 
         scroll_down = "window.scrollTo(0, document.body.scrollHeight);"
         browser.execute_script(scroll_down)
-        time.sleep(3 + (random() * 5))
+        time.sleep(1 + (random() * 5))
 
     return [
         {"post_link": post_links[i], "image": images[i], "search_hashtag": hashtag}
@@ -95,6 +96,31 @@ def scrape_data(hashtag, n, delay=5):
         return posts
 
 
+def prepare_image(img_path, height=160, width=160, where='s3'):
+    """Downsample and scale image to prepare it for neural network"""
+    if where=='s3':
+        img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
+    elif where == 'local':
+    # If the image is stored locally:
+        img = tf.io.read_file(img_path)
+        img = tf.image.decode_image(img)
+    img = tf.cast(img, tf.float32)
+    img = (img/127.5) - 1
+    img = tf.image.resize(img, (height, width))
+    # Reshape grayscale images to match dimensions of color images
+    if img.shape != (160, 160, 3):
+        img = tf.concat([img, img, img], axis=2)
+    return img
+
+
+def extract_features(image, neural_network):
+    """Return a vector of 1280 deep features for image."""
+    image_np = image.numpy()
+    images_np = np.expand_dims(image_np, axis=0)
+    deep_features = neural_network.predict(images_np)[0]
+    return deep_features
+
+
 def upload_files_to_s3(
     dir_path, hashtag, bucket_name
 ):  #ex. dir_path: 'data/cars/' ; hashtag: 'travel'
@@ -134,29 +160,3 @@ def fetch_image_from_s3(bucket, key):
     f = BytesIO(data)
     image = Image.open(f)
     return image
-
-
-def prepare_image(img_path, height=160, width=160, where='s3'):
-    """Downsample and scale image to prepare it for neural network"""
-    if where=='s3':
-        img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
-    elif where == 'local':
-    # If the image is stored locally:
-        img = tf.io.read_file(img_path)
-        img = tf.image.decode_image(img)
-    img = tf.cast(img, tf.float32)
-    img = (img/127.5) - 1
-    img = tf.image.resize(img, (height, width))
-    # Reshape B&W images to match dimensions of color images
-    if img.shape != (160, 160, 3):
-        img = tf.concat([img, img, img], axis=2)
-    return img
-
-
-def extract_features(image, neural_network):
-    """Return a vector of 1280 deep features for image."""
-    image_np = image.numpy()
-    images_np = np.expand_dims(image_np, axis=0)
-    deep_features = neural_network.predict(images_np)[0]
-    return deep_features
- 
