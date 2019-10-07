@@ -1,10 +1,12 @@
-# Base scraping code taken from owner jnawjux with permission:
+# Base of scraping code taken from owner John Naujoks with permission. 
+# See John's scraping code (which this project expanded upon) here: 
 # https://github.com/jnawjux/web_scraping_corgis/blob/master/insta_scrape.py
 
 import numpy as np
 import time
 import re
 import os
+import json
 from random import random
 from selenium.webdriver import Chrome, Firefox
 from urllib.request import urlretrieve
@@ -13,23 +15,6 @@ import boto3
 from io import BytesIO
 from PIL import Image
 import tensorflow as tf
-from tensorflow.keras.applications import MobileNetV2
-
-
-def train_nn():
-    """Train neural network from the pre-trained model MobileNet V2"""
-    base_model = MobileNetV2(input_shape=(160, 160, 3), include_top=False, weights='imagenet')
-
-    global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
-
-    neural_network = tf.keras.Sequential([
-          base_model,
-          global_average_layer,
-    ])
-    return neural_network
-
-# create neural network to use in other functions
-neural_network = train_nn()
 
 
 def get_posts(hashtag, n, browser):
@@ -59,7 +44,7 @@ def get_posts(hashtag, n, browser):
 
         scroll_down = "window.scrollTo(0, document.body.scrollHeight);"
         browser.execute_script(scroll_down)
-        time.sleep(3 + (random() * 5))
+        time.sleep(1 + (random() * 5))
 
     return [
         {"post_link": post_links[i], "image": images[i], "search_hashtag": hashtag}
@@ -88,26 +73,69 @@ def get_image(url, hashtag):
     return name
 
 
-def get_full_info(hashtag, n):
-    """Return a dictionary with full n posts info for a given hashtag"""
+def scrape_data(hashtags, n, delay=5):
+    """
+    Download n images and return a dictionary with their metadata.
+    """
     browser = Firefox()
-
-    posts = get_posts(hashtag, n, browser)
     
-    try:
-        os.mkdir(f"data/{hashtag}")
-    except OSError:
-        pass # We probably tried to make something that already exists
+    for hashtag in hashtags: 
+        
+        posts = get_posts(hashtag, n, browser)
+        
+        try:
+            os.mkdir(f"data/{hashtag}")
+        except OSError:
+            pass # We probably tried to make something that already exists
 
-    try:
-        for post in posts:
-            post["hashtags"] = get_hashtags(post["post_link"], browser)
-            time.sleep(3 + (random() * 5))
-            post["image_local_name"] = get_image(post["image"], hashtag)
-            time.sleep(3 + (random() * 5))
-        return posts
-    except:
-        return posts
+        try:
+            for post in posts:
+                post["hashtags"] = get_hashtags(post["post_link"], browser)
+                time.sleep(random() * delay)
+                post["image_local_name"] = get_image(post["image"], hashtag)
+                time.sleep(random() * delay)
+            new_hashtag_metadata = posts
+        except:
+            new_hashtag_metadata = posts
+        
+        
+        #NOTE TO SELF: transferred code begins here
+        if os.path.exists(f"metadata/{hashtag}.json"):
+            # We already have metadata for this hashtag, add to it
+            with open(f"metadata/{hashtag}.json", "r") as f:
+                hashtag_metadata = json.load(f)
+                hashtag_metadata += new_hashtag_metadata
+        else:
+            # We don't have metadata for this hashtag yet, initialize it
+            hashtag_metadata = new_hashtag_metadata
+
+        with open(f"metadata/{hashtag}.json", "w") as f:
+            json.dump(hashtag_metadata, f)
+
+
+def prepare_image(img_path, height=160, width=160, where='s3'):
+    """Downsample and scale image to prepare it for neural network"""
+    if where=='s3':
+        img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
+    elif where == 'local':
+    # If the image is stored locally:
+        img = tf.io.read_file(img_path)
+        img = tf.image.decode_image(img)
+    img = tf.cast(img, tf.float32)
+    img = (img/127.5) - 1
+    img = tf.image.resize(img, (height, width))
+    # Reshape grayscale images to match dimensions of color images
+    if img.shape != (160, 160, 3):
+        img = tf.concat([img, img, img], axis=2)
+    return img
+
+
+def extract_features(image, neural_network):
+    """Return a vector of 1280 deep features for image."""
+    image_np = image.numpy()
+    images_np = np.expand_dims(image_np, axis=0)
+    deep_features = neural_network.predict(images_np)[0]
+    return deep_features
 
 
 def upload_files_to_s3(
@@ -149,41 +177,3 @@ def fetch_image_from_s3(bucket, key):
     f = BytesIO(data)
     image = Image.open(f)
     return image
-
-def prepare_image(img_path, height=160, width=160, where='s3'):
-    """Downsample and scale image to prepare it for neural network"""
-    if where=='s3':
-        img = fetch_image_from_s3_to_array('instagram-images-mod4', img_path)
-    elif where == 'local':
-    # If the image is stored locally:
-        img = tf.io.read_file(img_path)
-        img = tf.image.decode_image(img)
-    img = tf.cast(img, tf.float32)
-    img = (img/127.5) - 1
-    img = tf.image.resize(img, (height, width))
-    # Reshape B&W images to match dimensions of color images
-    if img.shape != (160, 160, 3):
-        img = tf.concat([img, img, img], axis=2)
-    return img
-
-
-
-def extract_features(image_dict):
-    """Return a vector of 1280 deep features for image."""
-    image = image_dict['pic']
-    image_np = image.numpy()
-    images_np = np.expand_dims(image_np, axis=0)
-    # image_np.shape, images_np.shape
-    deep_features = neural_network.predict(images_np)
-    image_dict['deep_features'] = deep_features[0]
-    return image_dict
-
-
-def extract_features_for_one_image(image, neural_network_model):
-    """Return a vector of 1280 deep features for image."""
-    image_np = image.numpy()
-    images_np = np.expand_dims(image_np, axis=0)
-    # image_np.shape, images_np.shape
-    deep_features = neural_network_model.predict(images_np)[0]
-    return deep_features
- 
