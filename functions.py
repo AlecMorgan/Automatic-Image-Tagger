@@ -6,6 +6,7 @@ import numpy as np
 import time
 import re
 import os
+import json
 from random import random
 from selenium.webdriver import Chrome, Firefox
 from urllib.request import urlretrieve
@@ -72,28 +73,44 @@ def get_image(url, hashtag):
     return name
 
 
-def scrape_data(hashtag, n, delay=5):
+def scrape_data(hashtags, n, delay=5):
     """
     Download n images and return a dictionary with their metadata.
     """
     browser = Firefox()
-
-    posts = get_posts(hashtag, n, browser)
     
-    try:
-        os.mkdir(f"data/{hashtag}")
-    except OSError:
-        pass # We probably tried to make something that already exists
+    for hashtag in hashtags: 
+        
+        posts = get_posts(hashtag, n, browser)
+        
+        try:
+            os.mkdir(f"data/{hashtag}")
+        except OSError:
+            pass # We probably tried to make something that already exists
 
-    try:
-        for post in posts:
-            post["hashtags"] = get_hashtags(post["post_link"], browser)
-            time.sleep(random() * delay)
-            post["image_local_name"] = get_image(post["image"], hashtag)
-            time.sleep(random() * delay)
-        return posts
-    except:
-        return posts
+        try:
+            for post in posts:
+                post["hashtags"] = get_hashtags(post["post_link"], browser)
+                time.sleep(random() * delay)
+                post["image_local_name"] = get_image(post["image"], hashtag)
+                time.sleep(random() * delay)
+            new_hashtag_metadata = posts
+        except:
+            new_hashtag_metadata = posts
+        
+        
+        #NOTE TO SELF: transferred code begins here
+        if os.path.exists(f"metadata/{hashtag}.json"):
+            # We already have metadata for this hashtag, add to it
+            with open(f"metadata/{hashtag}.json", "r") as f:
+                hashtag_metadata = json.load(f)
+                hashtag_metadata += new_hashtag_metadata
+        else:
+            # We don't have metadata for this hashtag yet, initialize it
+            hashtag_metadata = new_hashtag_metadata
+
+        with open(f"metadata/{hashtag}.json", "w") as f:
+            json.dump(hashtag_metadata, f)
 
 
 def prepare_image(img_path, height=160, width=160, where='s3'):
